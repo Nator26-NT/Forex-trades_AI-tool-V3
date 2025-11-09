@@ -1,4 +1,3 @@
-import MetaTrader5 as mt5
 import streamlit as st
 import pandas as pd
 import numpy as np
@@ -10,6 +9,14 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score
 from datetime import datetime
 import plotly.graph_objects as go
+
+# Try to import MetaTrader5, but provide fallback for cloud deployment
+try:
+    import MetaTrader5 as mt5
+    MT5_AVAILABLE = True
+except ImportError:
+    MT5_AVAILABLE = False
+    st.warning("⚠️ MetaTrader5 not available - running in simulation mode")
 
 class VolatilityMLModel:
     def __init__(self):
@@ -257,6 +264,11 @@ class VolatilityTradingManager:
     
     def connect_terminal_only(self):
         """Simple terminal-only connection"""
+        if not MT5_AVAILABLE:
+            st.warning("🔌 MetaTrader5 not available - Running in simulation mode")
+            self.connected = True  # Mark as connected for simulation
+            return True
+            
         try:
             st.info("🔗 Connecting to MT5 Terminal...")
             if mt5.initialize():
@@ -513,7 +525,13 @@ class VolatilityTradingManager:
         return self.volatility_symbols
     
     def place_trade(self, symbol, signal, volume, tp, sl):
-        """Place trade in MT5"""
+        """Place trade - simulation mode when MT5 not available"""
+        if not MT5_AVAILABLE:
+            st.success(f"🎯 SIMULATION: {signal} order for {symbol} at volume {volume}")
+            st.info(f"📊 TP: ${tp:.4f}, SL: ${sl:.4f}")
+            st.warning("⚠️ Running in simulation mode - No actual trade executed")
+            return True
+            
         try:
             if not self.connected:
                 st.error("❌ Not connected to MT5")
@@ -564,6 +582,11 @@ class VolatilityTradingManager:
     
     def disconnect_mt5(self):
         """Disconnect from MT5"""
+        if not MT5_AVAILABLE:
+            st.info("🔌 Simulation mode disconnected")
+            self.connected = False
+            return True
+            
         try:
             mt5.shutdown()
             self.connected = False
