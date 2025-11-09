@@ -10,14 +10,6 @@ from sklearn.metrics import accuracy_score
 from datetime import datetime
 import plotly.graph_objects as go
 
-# Try to import MetaTrader5, but provide fallback for cloud deployment
-try:
-    import MetaTrader5 as mt5
-    MT5_AVAILABLE = True
-except ImportError:
-    MT5_AVAILABLE = False
-    st.warning("⚠️ MetaTrader5 not available - running in simulation mode")
-
 class VolatilityMLModel:
     def __init__(self):
         self.model = None
@@ -248,7 +240,6 @@ class VolatilityMLModel:
 
 class VolatilityTradingManager:
     def __init__(self):
-        self.connected = False
         self.ml_model = VolatilityMLModel()
         # Updated with indices from your screenshot
         self.volatility_symbols = [
@@ -261,26 +252,6 @@ class VolatilityTradingManager:
             # Other Global Indices
             "GDAXlm", "MXSHAR", "MXSHARTR", "RVL1"
         ]
-    
-    def connect_terminal_only(self):
-        """Simple terminal-only connection"""
-        if not MT5_AVAILABLE:
-            st.warning("🔌 MetaTrader5 not available - Running in simulation mode")
-            self.connected = True  # Mark as connected for simulation
-            return True
-            
-        try:
-            st.info("🔗 Connecting to MT5 Terminal...")
-            if mt5.initialize():
-                self.connected = True
-                st.success("✅ SUCCESS! Connected to MT5 Terminal")
-                return True
-            else:
-                st.error("❌ MT5 Connection Failed")
-                return False
-        except Exception as e:
-            st.error(f"Connection error: {str(e)}")
-            return False
     
     def get_market_data(self, symbol, period="6mo"):
         """Get market data from Yahoo Finance with symbol mapping"""
@@ -472,26 +443,8 @@ class VolatilityTradingManager:
         
         return result
     
-    def create_ml_analysis_dashboard(self, result):
-        """Create ML analysis dashboard"""
-        st.subheader("🧠 ML Trading Insights")
-        
-        insights = result['insights']
-        
-        col1, col2 = st.columns(2)
-        
-        with col1:
-            st.info(f"**Trendlines**: {insights['trend_analysis']}")
-            st.info(f"**Herd Behavior**: {insights['herd_sentiment']}")
-        
-        with col2:
-            st.info(f"**Gap Analysis**: {insights['gap_analysis']}")
-            st.info(f"**Volatility**: {insights['volatility_opportunity']}")
-        
-        st.info(f"**Risk**: {insights['risk_assessment']}")
-    
     def create_price_chart(self, df, symbol, current_price, tp, sl, signal):
-        """Create simple price chart"""
+        """Create price chart with dark theme"""
         fig = go.Figure()
         
         # Price line
@@ -500,97 +453,32 @@ class VolatilityTradingManager:
             y=df['close'], 
             mode='lines', 
             name='Price',
-            line=dict(color='blue', width=2)
+            line=dict(color='#00FF00', width=2)
         ))
         
         # Current price
-        fig.add_hline(y=current_price, line_dash="dash", line_color="green",
+        fig.add_hline(y=current_price, line_dash="dash", line_color="#00FF00",
                      annotation_text=f"Current: ${current_price:.2f}")
         
         # TP/SL lines
         if signal in ["BUY", "SELL"]:
-            fig.add_hline(y=tp, line_dash="dot", line_color="green",
+            fig.add_hline(y=tp, line_dash="dot", line_color="#00FF00",
                          annotation_text=f"TP: ${tp:.2f}")
-            fig.add_hline(y=sl, line_dash="dot", line_color="red",
+            fig.add_hline(y=sl, line_dash="dot", line_color="#FF6B6B",
                          annotation_text=f"SL: ${sl:.2f}")
         
+        # Update layout for dark theme
         fig.update_layout(
             title=f"{symbol} Price - Signal: {signal}",
-            height=400
+            height=400,
+            paper_bgcolor='#0A0A0A',
+            plot_bgcolor='#0A0A0A',
+            font=dict(color='#FFFFFF'),
+            xaxis=dict(gridcolor='#333333'),
+            yaxis=dict(gridcolor='#333333')
         )
         
         return fig
     
     def get_available_symbols(self):
         return self.volatility_symbols
-    
-    def place_trade(self, symbol, signal, volume, tp, sl):
-        """Place trade - simulation mode when MT5 not available"""
-        if not MT5_AVAILABLE:
-            st.success(f"🎯 SIMULATION: {signal} order for {symbol} at volume {volume}")
-            st.info(f"📊 TP: ${tp:.4f}, SL: ${sl:.4f}")
-            st.warning("⚠️ Running in simulation mode - No actual trade executed")
-            return True
-            
-        try:
-            if not self.connected:
-                st.error("❌ Not connected to MT5")
-                return False
-            
-            if signal not in ["BUY", "SELL"]:
-                st.error("❌ Invalid signal")
-                return False
-            
-            symbol_info = mt5.symbol_info(symbol)
-            if symbol_info is None:
-                st.error(f"❌ Symbol {symbol} not found")
-                return False
-            
-            tick = mt5.symbol_info_tick(symbol)
-            if tick is None:
-                st.error("❌ Cannot get current price")
-                return False
-            
-            order_type = mt5.ORDER_TYPE_BUY if signal == "BUY" else mt5.ORDER_TYPE_SELL
-            
-            request = {
-                "action": mt5.TRADE_ACTION_DEAL,
-                "symbol": symbol,
-                "volume": float(volume),
-                "type": order_type,
-                "price": tick.ask if order_type == mt5.ORDER_TYPE_BUY else tick.bid,
-                "sl": float(sl),
-                "tp": float(tp),
-                "deviation": 20,
-                "magic": 234000,
-                "comment": "ML Volatility Trading",
-                "type_time": mt5.ORDER_TIME_GTC,
-            }
-            
-            result = mt5.order_send(request)
-            
-            if result.retcode != mt5.TRADE_RETCODE_DONE:
-                st.error(f"❌ Trade failed")
-                return False
-            else:
-                st.success(f"✅ {signal} {symbol} executed!")
-                return True
-                
-        except Exception as e:
-            st.error(f"❌ Trade error: {str(e)}")
-            return False
-    
-    def disconnect_mt5(self):
-        """Disconnect from MT5"""
-        if not MT5_AVAILABLE:
-            st.info("🔌 Simulation mode disconnected")
-            self.connected = False
-            return True
-            
-        try:
-            mt5.shutdown()
-            self.connected = False
-            st.info("🔌 Disconnected from MT5")
-            return True
-        except:
-            return False

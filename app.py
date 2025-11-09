@@ -3,7 +3,6 @@ import pandas as pd
 import plotly.graph_objects as go
 from datetime import datetime
 import time
-import MetaTrader5 as mt5
 
 # Import our volatility trading manager
 from mt5_manager import VolatilityTradingManager
@@ -16,56 +15,106 @@ def main():
         initial_sidebar_state="expanded"
     )
     
-    # Custom CSS
+    # Dark Theme CSS
     st.markdown("""
     <style>
     .main-header {
         font-size: 3rem;
-        color: #FF4B4B;
+        color: #00FF00;
         text-align: center;
         margin-bottom: 2rem;
+        font-weight: bold;
+    }
+    .sub-header {
+        font-size: 1.5rem;
+        color: #00FF00;
+        margin-bottom: 1rem;
+        font-weight: bold;
     }
     .signal-buy {
-        background-color: #00ff00 !important;
-        color: black !important;
+        background-color: #006400 !important;
+        color: #00FF00 !important;
         padding: 10px;
         border-radius: 5px;
         font-weight: bold;
         text-align: center;
+        border: 1px solid #00FF00;
     }
     .signal-sell {
-        background-color: #ff0000 !important;
-        color: white !important;
+        background-color: #8B0000 !important;
+        color: #FF6B6B !important;
         padding: 10px;
         border-radius: 5px;
         font-weight: bold;
         text-align: center;
+        border: 1px solid #FF6B6B;
     }
     .signal-hold {
-        background-color: #ffff00 !important;
-        color: black !important;
+        background-color: #2F4F4F !important;
+        color: #CCCCCC !important;
         padding: 10px;
         border-radius: 5px;
         font-weight: bold;
         text-align: center;
+        border: 1px solid #CCCCCC;
     }
     .metric-card {
-        background-color: #f0f2f6;
+        background-color: #1E1E1E;
         padding: 15px;
         border-radius: 10px;
         margin: 10px 0;
+        border: 1px solid #333;
     }
     .ml-insight {
-        background-color: #e8f4fd;
+        background-color: #2D2D2D;
         padding: 15px;
         border-radius: 10px;
         margin: 10px 0;
-        border-left: 4px solid #2196F3;
+        border-left: 4px solid #00FF00;
+        color: #FFFFFF;
+    }
+    .stApp {
+        background-color: #0A0A0A;
+        color: #FFFFFF;
+    }
+    .stSidebar {
+        background-color: #1A1A1A;
+    }
+    .stButton>button {
+        background-color: #006400;
+        color: #00FF00;
+        border: 1px solid #00FF00;
+        border-radius: 5px;
+        font-weight: bold;
+    }
+    .stButton>button:hover {
+        background-color: #008000;
+        color: #FFFFFF;
+        border: 1px solid #00FF00;
+    }
+    .stSelectbox>div>div {
+        background-color: #1E1E1E;
+        color: #FFFFFF;
+    }
+    .stNumberInput>div>div>input {
+        background-color: #1E1E1E;
+        color: #FFFFFF;
+    }
+    .stSlider>div>div>div>div {
+        background-color: #006400;
+    }
+    .stRadio>div {
+        background-color: #1E1E1E;
+        padding: 10px;
+        border-radius: 5px;
+    }
+    .stDataFrame {
+        background-color: #1E1E1E;
     }
     </style>
     """, unsafe_allow_html=True)
     
-    st.markdown('<h1 class="main-header">🤖 AI Volatility Trading System</h1>', unsafe_allow_html=True)
+    st.markdown('<h1 class="main-header">🤖 AI VOLATILITY TRADING SYSTEM</h1>', unsafe_allow_html=True)
     
     # Initialize session state
     if 'mt5_manager' not in st.session_state:
@@ -75,28 +124,13 @@ def main():
     if 'ml_analysis' not in st.session_state:
         st.session_state.ml_analysis = {}
     if 'current_symbol' not in st.session_state:
-        st.session_state.current_symbol = "VIX"
+        st.session_state.current_symbol = "SP500m"
     
     # Sidebar
-    st.sidebar.title("⚙️ Trading Controls")
-    
-    # Connection Section
-    st.sidebar.subheader("🔗 Connection")
-    col1, col2 = st.sidebar.columns(2)
-    
-    with col1:
-        if st.button("Connect to MT5"):
-            with st.spinner("Connecting to MT5..."):
-                if st.session_state.mt5_manager.connect_terminal_only():
-                    st.sidebar.success("Connected!")
-    
-    with col2:
-        if st.button("Disconnect"):
-            st.session_state.mt5_manager.disconnect_mt5()
-            st.sidebar.info("Disconnected")
+    st.sidebar.markdown('<h2 style="color: #00FF00;">⚙️ TRADING CONTROLS</h2>', unsafe_allow_html=True)
     
     # Volatility Symbol Selection
-    st.sidebar.subheader("📊 Volatility Symbols")
+    st.sidebar.markdown('<h3 style="color: #00FF00;">📊 VOLATILITY SYMBOLS</h3>', unsafe_allow_html=True)
     available_symbols = st.session_state.mt5_manager.get_available_symbols()
     selected_symbol = st.sidebar.selectbox(
         "Select Volatility Index:",
@@ -105,11 +139,11 @@ def main():
     )
     
     # Trading Parameters
-    st.sidebar.subheader("💰 Trading Parameters")
+    st.sidebar.markdown('<h3 style="color: #00FF00;">💰 TRADING PARAMETERS</h3>', unsafe_allow_html=True)
     trade_volume = st.sidebar.number_input("Trade Volume (Lots):", min_value=0.01, max_value=10.0, value=0.1, step=0.01)
     
     # ML Model Section
-    st.sidebar.subheader("🤖 ML Model")
+    st.sidebar.markdown('<h3 style="color: #00FF00;">🤖 ML MODEL</h3>', unsafe_allow_html=True)
     ml_col1, ml_col2 = st.sidebar.columns(2)
     
     with ml_col1:
@@ -125,11 +159,11 @@ def main():
         st.session_state.ml_enabled = st.checkbox("Use ML", value=True)
     
     # Auto-refresh option
-    st.sidebar.subheader("🔄 Auto Refresh")
+    st.sidebar.markdown('<h3 style="color: #00FF00;">🔄 AUTO REFRESH</h3>', unsafe_allow_html=True)
     auto_refresh = st.sidebar.checkbox("Enable Auto-Refresh (15 seconds)")
     
     # Analysis Type Selection
-    st.sidebar.subheader("🔍 Analysis Type")
+    st.sidebar.markdown('<h3 style="color: #00FF00;">🔍 ANALYSIS TYPE</h3>', unsafe_allow_html=True)
     analysis_type = st.sidebar.radio(
         "Choose Analysis Method:",
         ["ML Smart Analysis", "Basic Technical Analysis"]
@@ -139,14 +173,14 @@ def main():
     col1, col2 = st.columns([2, 1])
     
     with col1:
-        st.subheader("🎯 Trading Signals")
+        st.markdown('<h2 style="color: #00FF00;">🎯 TRADING SIGNALS</h2>', unsafe_allow_html=True)
         
         # Analysis Buttons
         col_btn1, col_btn2 = st.columns(2)
         
         with col_btn1:
             if analysis_type == "ML Smart Analysis":
-                if st.button("🧠 Run ML Analysis", type="primary", use_container_width=True):
+                if st.button("🧠 RUN ML ANALYSIS", type="primary", use_container_width=True):
                     if selected_symbol:
                         with st.spinner(f"Running ML Analysis on {selected_symbol}..."):
                             result = st.session_state.mt5_manager.analyze_with_ml(selected_symbol)
@@ -158,7 +192,7 @@ def main():
                     else:
                         st.error("Please select a volatility symbol")
             else:
-                if st.button("📊 Basic Analysis", type="primary", use_container_width=True):
+                if st.button("📊 BASIC ANALYSIS", type="primary", use_container_width=True):
                     if selected_symbol:
                         with st.spinner(f"Analyzing {selected_symbol}..."):
                             result = st.session_state.mt5_manager.get_market_analysis(selected_symbol)
@@ -171,7 +205,7 @@ def main():
                         st.error("Please select a volatility symbol")
         
         with col_btn2:
-            if st.button("📈 Show Chart", use_container_width=True):
+            if st.button("📈 SHOW CHART", use_container_width=True):
                 if selected_symbol in st.session_state.analysis_results:
                     result = st.session_state.analysis_results[selected_symbol]
                     display_chart(result, selected_symbol)
@@ -193,7 +227,7 @@ def main():
             st.rerun()
     
     with col2:
-        st.subheader("⚡ Quick Actions")
+        st.markdown('<h2 style="color: #00FF00;">⚡ QUICK ACTIONS</h2>', unsafe_allow_html=True)
         
         # Determine which result to use
         current_result = None
@@ -207,10 +241,10 @@ def main():
     
     # Market Overview Section
     st.markdown("---")
-    st.subheader("📈 Volatility Market Overview")
+    st.markdown('<h2 style="color: #00FF00;">📈 VOLATILITY MARKET OVERVIEW</h2>', unsafe_allow_html=True)
     
     # Multi-symbol analysis
-    if st.button("🔄 Scan All Volatility Symbols"):
+    if st.button("🔄 SCAN ALL VOLATILITY SYMBOLS"):
         with st.spinner("Scanning volatility market..."):
             results = []
             symbols_to_scan = available_symbols[:6]  # Limit to 6 symbols
@@ -232,58 +266,59 @@ def main():
     
     # Strategy Explanation
     st.markdown("---")
-    st.subheader("🎯 Trading Strategy")
+    st.markdown('<h2 style="color: #00FF00;">🎯 TRADING STRATEGY</h2>', unsafe_allow_html=True)
     
     exp_col1, exp_col2 = st.columns(2)
     
     with exp_col1:
         st.markdown("""
-        **🤖 ML Smart Analysis:**
+        **<span style="color: #00FF00;">🤖 ML Smart Analysis:</span>**
         - **Trendlines**: Moving averages, ADX, trend strength
         - **Herd Behavior**: RSI extremes, contrarian signals
         - **Gap Analysis**: Gap size, fill probability
         - **Volatility Opportunities**: ATR, Bollinger Bands
         - **Risk Assessment**: Dynamic stop losses
-        """)
+        """, unsafe_allow_html=True)
         
         st.markdown("""
-        **📊 Technical Indicators:**
+        **<span style="color: #00FF00;">📊 Technical Indicators:</span>**
         - **RSI** - Momentum and overbought/oversold
         - **ATR** - Volatility measurement  
         - **MACD** - Trend direction
         - **Bollinger Bands** - Volatility channels
         - **ADX** - Trend strength
-        """)
+        """, unsafe_allow_html=True)
     
     with exp_col2:
         st.markdown("""
-        **💡 Volatility Trading Tips:**
+        **<span style="color: #00FF00;">💡 Volatility Trading Tips:</span>**
         - **Use trendlines** - Follow the dominant trend
         - **Don't follow the herd** - Look for contrarian opportunities
         - **Take position early** - Act on news and gaps quickly
         - **Fill the gap** - Trade gap fill opportunities
         - **Venture a guess** - Use probability-based entries
-        """)
+        """, unsafe_allow_html=True)
         
         st.markdown("""
-        **⚡ Supported Symbols:**
-        - VIX, VXX, UVXY, SVXY, VXZ
-        - SPY, QQQ, IWM, DIA, GLD
-        - USO, TLT, HYG, LQD, EEM
-        """)
+        **<span style="color: #00FF00;">⚡ Supported Symbols:</span>**
+        - **US**: SP500m, US500, ND100m, US30
+        - **Europe**: GER30, UK100, FRA40
+        - **Asia**: NJ225, HSI50, AUS200
+        - **Global**: EUSTX50, MXSHAR, RVL1
+        """, unsafe_allow_html=True)
     
     # Footer
     st.markdown("---")
     st.markdown("""
-    <div style='text-align: center'>
-        <p><strong>⚡ AI Volatility Trading System</strong> - Powered by Machine Learning</p>
-        <p><em>Advanced volatility analysis using ML | Always practice risk management</em></p>
+    <div style='text-align: center; color: #CCCCCC;'>
+        <p><strong style="color: #00FF00;">⚡ AI VOLATILITY TRADING SYSTEM</strong> - Powered by Machine Learning</p>
+        <p><em>Advanced volatility analysis using ML | Signal Generation Only</em></p>
     </div>
     """, unsafe_allow_html=True)
 
 def display_ml_results(result):
     """Display ML analysis results"""
-    st.success(f"✅ ML Analysis Complete for {result['symbol']}")
+    st.success(f"✅ ML ANALYSIS COMPLETE FOR {result['symbol']}")
     
     # Main Metrics
     col1, col2, col3, col4 = st.columns(4)
@@ -319,25 +354,25 @@ def display_ml_results(result):
             st.metric("Risk/Reward", f"{result['risk_reward']:.2f}:1", delta="Poor")
     
     # ML Insights
-    st.subheader("🧠 ML Trading Insights")
+    st.markdown('<h3 style="color: #00FF00;">🧠 ML TRADING INSIGHTS</h3>', unsafe_allow_html=True)
     
     insights = result['insights']
     
     insight_col1, insight_col2 = st.columns(2)
     
     with insight_col1:
-        st.markdown(f'<div class="ml-insight">📈 <strong>Trend Analysis:</strong><br>{insights["trend_analysis"]}</div>', unsafe_allow_html=True)
-        st.markdown(f'<div class="ml-insight">👥 <strong>Herd Behavior:</strong><br>{insights["herd_sentiment"]}</div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="ml-insight">📈 <strong>TREND ANALYSIS:</strong><br>{insights["trend_analysis"]}</div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="ml-insight">👥 <strong>HERD BEHAVIOR:</strong><br>{insights["herd_sentiment"]}</div>', unsafe_allow_html=True)
     
     with insight_col2:
-        st.markdown(f'<div class="ml-insight">↔️ <strong>Gap Analysis:</strong><br>{insights["gap_analysis"]}</div>', unsafe_allow_html=True)
-        st.markdown(f'<div class="ml-insight">🌪️ <strong>Volatility Opportunity:</strong><br>{insights["volatility_opportunity"]}</div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="ml-insight">↔️ <strong>GAP ANALYSIS:</strong><br>{insights["gap_analysis"]}</div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="ml-insight">🌪️ <strong>VOLATILITY OPPORTUNITY:</strong><br>{insights["volatility_opportunity"]}</div>', unsafe_allow_html=True)
     
     # Risk Assessment
-    st.markdown(f'<div class="ml-insight">🎯 <strong>Risk Assessment:</strong><br>{insights["risk_assessment"]}</div>', unsafe_allow_html=True)
+    st.markdown(f'<div class="ml-insight">🎯 <strong>RISK ASSESSMENT:</strong><br>{insights["risk_assessment"]}</div>', unsafe_allow_html=True)
     
     # TP/SL Information
-    st.subheader("🎯 Take Profit & Stop Loss")
+    st.markdown('<h3 style="color: #00FF00;">🎯 TAKE PROFIT & STOP LOSS</h3>', unsafe_allow_html=True)
     tp_col, sl_col, rr_col = st.columns(3)
     
     with tp_col:
@@ -357,7 +392,7 @@ def display_ml_results(result):
         st.metric("Risk Amount", f"{risk_amount:.2f}%")
     
     # Trading Recommendation
-    st.subheader("💡 ML Trading Recommendation")
+    st.markdown('<h3 style="color: #00FF00;">💡 ML TRADING RECOMMENDATION</h3>', unsafe_allow_html=True)
     
     if result['signal'] == "BUY" and result['confidence'] > 65:
         st.success("""
@@ -395,7 +430,7 @@ def display_ml_results(result):
 
 def display_basic_results(result, symbol):
     """Display basic technical analysis results"""
-    st.success(f"✅ Analysis Complete for {symbol}")
+    st.success(f"✅ ANALYSIS COMPLETE FOR {symbol}")
     
     # Main Metrics
     col1, col2, col3, col4 = st.columns(4)
@@ -421,7 +456,7 @@ def display_basic_results(result, symbol):
         st.metric("Risk/Reward", f"{result['risk_reward']:.2f}:1")
     
     # TP/SL Information
-    st.subheader("🎯 Take Profit & Stop Loss")
+    st.markdown('<h3 style="color: #00FF00;">🎯 TAKE PROFIT & STOP LOSS</h3>', unsafe_allow_html=True)
     tp_col, sl_col, rr_col = st.columns(3)
     
     with tp_col:
@@ -441,7 +476,7 @@ def display_basic_results(result, symbol):
         st.metric("Risk Amount", f"{risk_amount:.2f}%")
     
     # Technical Indicators
-    st.subheader("📊 Technical Indicators")
+    st.markdown('<h3 style="color: #00FF00;">📊 TECHNICAL INDICATORS</h3>', unsafe_allow_html=True)
     indicators = result['indicators']
     
     ind_col1, ind_col2, ind_col3, ind_col4 = st.columns(4)
@@ -463,8 +498,8 @@ def display_basic_results(result, symbol):
         st.metric("Volatility %", f"{indicators['Volatility_Ratio']:.2f}%")
 
 def display_chart(result, symbol):
-    """Display price chart"""
-    st.subheader("📈 Price Chart")
+    """Display price chart with dark theme"""
+    st.markdown('<h3 style="color: #00FF00;">📈 PRICE CHART</h3>', unsafe_allow_html=True)
     
     chart = st.session_state.mt5_manager.create_price_chart(
         result['data'], 
@@ -479,39 +514,8 @@ def display_chart(result, symbol):
 def display_quick_actions(result, symbol, trade_volume):
     """Display quick action buttons and trade info"""
     
-    # Execute Trade Buttons
-    trade_col1, trade_col2 = st.columns(2)
-    
-    with trade_col1:
-        if "BUY" in result['signal']:
-            if st.button("✅ EXECUTE BUY", type="primary", use_container_width=True):
-                if st.session_state.mt5_manager.place_trade(
-                    symbol=symbol,
-                    signal=result['signal'],
-                    volume=trade_volume,
-                    tp=result['take_profit'],
-                    sl=result['stop_loss']
-                ):
-                    st.success("Buy trade executed!")
-        else:
-            st.button("✅ EXECUTE BUY", disabled=True, use_container_width=True)
-    
-    with trade_col2:
-        if "SELL" in result['signal']:
-            if st.button("🔻 EXECUTE SELL", type="primary", use_container_width=True):
-                if st.session_state.mt5_manager.place_trade(
-                    symbol=symbol,
-                    signal=result['signal'],
-                    volume=trade_volume,
-                    tp=result['take_profit'],
-                    sl=result['stop_loss']
-                ):
-                    st.success("Sell trade executed!")
-        else:
-            st.button("🔻 EXECUTE SELL", disabled=True, use_container_width=True)
-    
-    # Trade Details Card
-    st.subheader("📋 Trade Setup")
+    # Signal Information
+    st.markdown('<h3 style="color: #00FF00;">📋 TRADE SETUP</h3>', unsafe_allow_html=True)
     
     st.info(f"""
     **Symbol:** {result['symbol']}
@@ -525,26 +529,26 @@ def display_quick_actions(result, symbol, trade_volume):
     """)
     
     # Quick Analysis
-    st.subheader("🔍 Quick Analysis")
+    st.markdown('<h3 style="color: #00FF00;">🔍 QUICK ANALYSIS</h3>', unsafe_allow_html=True)
     
     # Confidence Level
     if result['confidence'] > 70:
-        st.success("**High Confidence Trade** - Strong signal quality")
+        st.success("**HIGH CONFIDENCE TRADE** - Strong signal quality")
     elif result['confidence'] > 50:
-        st.warning("**Medium Confidence Trade** - Moderate signal quality")
+        st.warning("**MEDIUM CONFIDENCE TRADE** - Moderate signal quality")
     else:
-        st.error("**Low Confidence** - Wait for better setup")
+        st.error("**LOW CONFIDENCE** - Wait for better setup")
     
     # Risk/Reward Assessment
     if result['risk_reward'] > 2:
-        st.success("**Excellent Risk/Reward** - Favorable ratio")
+        st.success("**EXCELLENT RISK/REWARD** - Favorable ratio")
     elif result['risk_reward'] > 1:
-        st.info("**Good Risk/Reward** - Acceptable ratio")
+        st.info("**GOOD RISK/REWARD** - Acceptable ratio")
     else:
-        st.warning("**Poor Risk/Reward** - Consider adjusting stops")
+        st.warning("**POOR RISK/REWARD** - Consider adjusting stops")
     
     # Position Size Calculator
-    st.subheader("🧮 Position Calculator")
+    st.markdown('<h3 style="color: #00FF00;">🧮 POSITION CALCULATOR</h3>', unsafe_allow_html=True)
     
     account_balance = st.number_input("Account Balance ($):", min_value=1000, max_value=1000000, value=10000, step=1000)
     risk_percent = st.slider("Risk per Trade (%):", min_value=0.5, max_value=5.0, value=2.0, step=0.5)
@@ -559,7 +563,7 @@ def display_quick_actions(result, symbol, trade_volume):
 
 def display_market_overview(results):
     """Display market overview table"""
-    st.subheader("📊 Market Overview Results")
+    st.markdown('<h3 style="color: #00FF00;">📊 MARKET OVERVIEW RESULTS</h3>', unsafe_allow_html=True)
     
     # Create results dataframe
     df_results = pd.DataFrame([{
@@ -574,10 +578,7 @@ def display_market_overview(results):
     
     # Display styled dataframe
     st.dataframe(
-        df_results.style.applymap(
-            lambda x: 'background-color: #90EE90' if 'BUY' in str(x) else ('background-color: #FFB6C1' if 'SELL' in str(x) else ''),
-            subset=['signal']
-        ).format({
+        df_results.style.format({
             'price': '${:.2f}',
             'confidence': '{:.1f}%',
             'tp': '${:.2f}',
@@ -589,7 +590,7 @@ def display_market_overview(results):
     )
     
     # Summary Statistics
-    st.subheader("📈 Market Summary")
+    st.markdown('<h3 style="color: #00FF00;">📈 MARKET SUMMARY</h3>', unsafe_allow_html=True)
     
     buy_signals = len([r for r in results if "BUY" in r['signal']])
     sell_signals = len([r for r in results if "SELL" in r['signal']])
